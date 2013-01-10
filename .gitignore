@@ -3,6 +3,7 @@ Debug
 Release
 ipch
 *.sdf
+*.opensdf
 
 # Compiled Object files
 *.slo
