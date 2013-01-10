@@ -1,3 +1,9 @@
+# Visual Studio Gunf
+Debug
+Release
+ipch
+*.sdf
+
 # Compiled Object files
 *.slo
 *.lo
