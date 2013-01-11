@@ -9,7 +9,7 @@ TObject::TObject( ID3D10Device *device, TEffect *effect, ID3D10EffectTechnique *
 	this->device = device;
 	this->effect = effect;
 	this->technique = technique;
-	position = new Position();
+	position = new TPosition();
 }
 
 

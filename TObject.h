@@ -2,7 +2,7 @@
 
 #include "DXUT.h"
 
-#include "Position.h"
+#include "TPosition.h"
 #include "TEffect.h"
 #include <d3d10.h>
 #include <vector>
@@ -23,7 +23,7 @@ public:
 
 	virtual void Render(D3DMATRIX viewProjection, D3DMATRIX context) = 0;
 
-	Position *position;
+	TPosition *position;
 	TEffect *effect;
 	ID3D10EffectTechnique *technique;
 	ID3D10Device *device;

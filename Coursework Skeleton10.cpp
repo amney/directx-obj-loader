@@ -113,11 +113,6 @@ ID3D10InputLayout*          g_pVertexLayout = NULL;
 // 2: Consider encapsulating some of this stuff into classes of your own.	//
 //**************************************************************************//
 
-CDXUTSDKMesh		   g_MeshTiger;	
-CDXUTSDKMesh           g_MeshWing;
-CDXUTSDKMesh		   g_MeshSkyBox;
-CDXUTSDKMesh		   g_MeshTeapot;
-
 TMeshProducer	       *g_MeshProducer;
 
 TObject3D			   *g_NewTiger;
@@ -142,9 +137,6 @@ DWORD sound1State = 0;
 //**********************************************************************//
 // Variables to control the movement of the tiger.						//
 //**********************************************************************//
-
-float		 g_f_TigerX,  g_f_TigerY, g_f_TigerZ;	//X, y, z position.
-float		 g_f_TigerRX, g_f_TigerRY,g_f_TigerRZ;	//Rotate about X, Y, Z.
 
 bool		 g_b_LeftArrowDown      = false;	//Status of keyboard.  Thess are set
 bool		 g_b_RightArrowDown     = false;	//in the callback KeyboardProc(), and 
@@ -583,6 +575,7 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
     RenderText();
     g_HUD.OnRender( fElapsedTime );
     g_SampleUI.OnRender( fElapsedTime );
+
     DXUT_EndPerfEvent();
 }
 
@@ -609,9 +602,6 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext )
     SAFE_RELEASE( g_pVertexLayout );
     SAFE_RELEASE( g_pSprite10 );
     SAFE_DELETE( g_pTxtHelper );
-	g_MeshTiger.Destroy();
-	g_MeshWing.Destroy();
-	g_MeshSkyBox.Destroy();
 	SAFE_DELETE(g_NewTiger);
 	SAFE_DELETE(g_NewSkyBox);
 	SAFE_DELETE(g_LWing);
@@ -697,7 +687,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if (g_b_W)			g_NewTiger->position->MoveForward(fElapsedTime*2);
 
 	if (g_b_Space){
-			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,&g_MeshTiger);
+			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProduceTiger());
 			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
 			balls.push_back(ball);
 	}
