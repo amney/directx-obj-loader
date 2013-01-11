@@ -383,6 +383,7 @@
     <ClCompile Include="Position.cpp" />
     <ClCompile Include="TBall.cpp" />
     <ClCompile Include="TEffect.cpp" />
+    <ClCompile Include="TMeshProducer.cpp" />
     <ClCompile Include="TObject.cpp" />
     <ClCompile Include="TObject2D.cpp" />
     <ClCompile Include="TObject3D.cpp" />
@@ -392,6 +393,7 @@
     <ClInclude Include="Position.h" />
     <ClInclude Include="TBall.h" />
     <ClInclude Include="TEffect.h" />
+    <ClInclude Include="TMeshProducer.h" />
     <ClInclude Include="TObject.h" />
     <ClInclude Include="TObject2D.h" />
     <ClInclude Include="TObject3D.h" />

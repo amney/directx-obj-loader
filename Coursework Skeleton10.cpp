@@ -62,6 +62,7 @@
 #include "NigSoundManager.h"
 #include "NigSound.h"
 #include "TTexture.h"
+#include "TMeshProducer.h"
 
 
 //#define DEBUG_VS   // Uncomment this line to debug D3D9 vertex shaders 
@@ -116,6 +117,8 @@ CDXUTSDKMesh		   g_MeshTiger;
 CDXUTSDKMesh           g_MeshWing;
 CDXUTSDKMesh		   g_MeshSkyBox;
 CDXUTSDKMesh		   g_MeshTeapot;
+
+TMeshProducer	       *g_MeshProducer;
 
 TObject3D			   *g_NewTiger;
 TObject3D			   *g_NewSkyBox;
@@ -209,7 +212,6 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext );
 
 void InitApp();
 void RenderText();
-void renderMesh(ID3D10Device* pd3dDevice, ID3D10EffectTechnique *technique, CDXUTSDKMesh *mesh);
 void UpdateControllerState(float frameTime);
 
 
@@ -327,6 +329,7 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
                                       void* pUserContext )
 {
 	g_p_d3dDevice = pd3dDevice;
+	g_MeshProducer = new TMeshProducer(pd3dDevice);
 
     HRESULT hr;
 
@@ -360,44 +363,35 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
 
 	texture = new TTexture(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,L"Media\\seafloor.dds");
 
-	for(int x = 0; x < 100; x += 2){
-		for(int z = 0; z < 100; z += 2){
+	for(int x = 0; x < 20; x += 2){
+		for(int z = 0; z < 20; z += 2){
 			TObject2D *tile = new TObject2D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,texture);
 			tile->position->MoveTo(x,0,z);
 			tiles.push_back(tile);
 		}
 	}
 
-	V( g_MeshTiger.Create( pd3dDevice, L"Media\\Tiger\\Tiger.sdkmesh", true ) );
-
-
-	g_NewTiger = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,&g_MeshTiger);
+	g_NewTiger = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,g_MeshProducer->ProduceTiger());
 	g_NewTiger->position->MoveTo(0,0.70,0);
 	g_NewTiger->position->RotateToDeg(0,0,0);
 	g_NewTiger->position->ScaleTo(1,1,1);
 
-	V( g_MeshWing.Create( pd3dDevice, L"Media\\Wing\\Wing.sdkmesh", true ) );
-
-	g_LWing = new TObject3D(pd3dDevice, g_p_TEffect, g_p_TEffect->g_p_TechniqueRenderWing, &g_MeshWing);
-	g_RWing = new TObject3D(pd3dDevice, g_p_TEffect, g_p_TEffect->g_p_TechniqueRenderWing, &g_MeshWing);
-
-
+	g_LWing = new TObject3D(pd3dDevice, g_p_TEffect, g_p_TEffect->g_p_TechniqueRenderWing, g_MeshProducer->ProduceWing());
+	g_RWing = new TObject3D(pd3dDevice, g_p_TEffect, g_p_TEffect->g_p_TechniqueRenderWing, g_MeshProducer->ProduceWing());
 	
 	g_LWing->position->RotateToDeg(0,180,0);
-
 	g_LWing->position->MoveBy(-0.2, 0.4, -0.5);
 	g_RWing->position->MoveBy(0.2, 0.4, -0.5);
 
 	g_NewTiger->children.push_back(g_LWing);
 	g_NewTiger->children.push_back(g_RWing);
 
-	V( g_MeshSkyBox.Create( pd3dDevice, L"Media\\CloudBox\\skysphere.sdkmesh", true ) );
-	g_NewSkyBox = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderSkyBox,&g_MeshSkyBox);
+	g_NewSkyBox = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderSkyBox, g_MeshProducer->ProduceSkyBox());
 	g_NewSkyBox->position->MoveTo(0,0,0);
 	g_NewSkyBox->position->RotateToDeg(0,0,0);
 	g_NewSkyBox->position->ScaleTo(0.1,0.1,0.1);
 
-	V( g_MeshTeapot.Create( pd3dDevice, L"Media\\Teapot.sdkmesh", true ) );
+	//V( g_MeshTeapot.Create( pd3dDevice, L"Media\\Teapot.sdkmesh", true ) );
 
 	//**********************************************************************//
 	// Create the sounds.													//
@@ -465,8 +459,6 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
     D3DXMATRIX matView;
     D3DXMATRIX matProj;
 
-
-
 	//////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
@@ -525,50 +517,50 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	// Update the Follow Cam
 	////////////////////////////////////////////////////////////////////////////////
 
-			//**************************************************************//
-			//Put the camera on the thing.   We have to create a new viewer //
-			// matrix.  Here the viewer matris is hidden in the camera.  In //
-			// fact the camera class Microsoft give us can follow objects	//
-			// anyway, if somebody can find out how!						//
-			//**************************************************************//
+	//**************************************************************//
+	//Put the camera on the thing.   We have to create a new viewer //
+	// matrix.  Here the viewer matris is hidden in the camera.  In //
+	// fact the camera class Microsoft give us can follow objects	//
+	// anyway, if somebody can find out how!						//
+	//**************************************************************//
 
-		    D3DXVECTOR3 viewerPos;
-			D3DXVECTOR3 lookAtThis;
-			D3DXVECTOR3 up         ( 0.0f, 1.0f, 0.0f );
-			D3DXVECTOR3 newUp;
+	D3DXVECTOR3 viewerPos;
+	D3DXVECTOR3 lookAtThis;
+	D3DXVECTOR3 up         ( 0.0f, 1.0f, 0.0f );
+	D3DXVECTOR3 newUp;
 
-	        //Set the viewer's position to the position of the thing.
+	//Set the viewer's position to the position of the thing.
 
-			viewerPos.x = g_NewTiger->position->m_x;   viewerPos.y = g_NewTiger->position->m_y;
-			viewerPos.z = g_NewTiger->position->m_z;
+	viewerPos.x = g_NewTiger->position->m_x;   viewerPos.y = g_NewTiger->position->m_y;
+	viewerPos.z = g_NewTiger->position->m_z;
 
-			//*****************************************************************//
-			// Create a new vector for the direction for the virwer to look in.//
-			// We do this by getting the object's initial direction vector,    //
-			// and multiplying it by the thing's combined x, y, z rotation     //
-			// matrices.   Up is still up; I'll leave that to you!             //
-			//*****************************************************************//
+	//*****************************************************************//
+	// Create a new vector for the direction for the virwer to look in.//
+	// We do this by getting the object's initial direction vector,    //
+	// and multiplying it by the thing's combined x, y, z rotation     //
+	// matrices.   Up is still up; I'll leave that to you!             //
+	//*****************************************************************//
 
-			g_NewTiger->setupWorldMatrices();
+	g_NewTiger->setupWorldMatrices();
 
-			D3DXVECTOR3 newDir, lookAtPoint;
-			D3DXVec3TransformCoord(&newDir, &g_NewTiger->position->initVecDir, &g_NewTiger->getRotationMatrix());
+	D3DXVECTOR3 newDir, lookAtPoint;
+	D3DXVec3TransformCoord(&newDir, &g_NewTiger->position->initVecDir, &g_NewTiger->getRotationMatrix());
 
-			// The viewer should now be looking at a point a little in front//
-			// of the object.   I hope.   Nigel.                            //
+	// The viewer should now be looking at a point a little in front//
+	// of the object.   I hope.   Nigel.                            //
 
-			D3DXVec3Normalize(&newDir, &newDir);
+	D3DXVec3Normalize(&newDir, &newDir);
 			
-			newDir *= -10;
+	newDir *= -10;
 
-			viewerPos += newDir;
-			viewerPos.y += 3;
+	viewerPos += newDir;
+	viewerPos.y += 3;
 			
-			lookAtPoint.x = g_NewTiger->position->m_x;
-			lookAtPoint.y = g_NewTiger->position->m_y;
-			lookAtPoint.z = g_NewTiger->position->m_z;
+	lookAtPoint.x = g_NewTiger->position->m_x;
+	lookAtPoint.y = g_NewTiger->position->m_y;
+	lookAtPoint.z = g_NewTiger->position->m_z;
 
-			g_Camera.SetViewParams(&viewerPos, &lookAtPoint);
+	g_Camera.SetViewParams(&viewerPos, &lookAtPoint);
 
 
    

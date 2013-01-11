@@ -91,6 +91,7 @@
       <Filter>Sound</Filter>
     </ClCompile>
     <ClCompile Include="TTexture.cpp" />
+    <ClCompile Include="TMeshProducer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Coursework Skeleton10.fx">
@@ -117,6 +118,7 @@
       <Filter>Sound</Filter>
     </ClInclude>
     <ClInclude Include="TTexture.h" />
+    <ClInclude Include="TMeshProducer.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
