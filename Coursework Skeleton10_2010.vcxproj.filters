@@ -90,6 +90,7 @@
     <ClCompile Include="NigSoundManager.cpp">
       <Filter>Sound</Filter>
     </ClCompile>
+    <ClCompile Include="TTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Coursework Skeleton10.fx">
@@ -115,6 +116,7 @@
     <ClInclude Include="NigSoundManager.h">
       <Filter>Sound</Filter>
     </ClInclude>
+    <ClInclude Include="TTexture.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

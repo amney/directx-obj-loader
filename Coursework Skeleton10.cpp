@@ -61,6 +61,7 @@
 #include <vector>
 #include "NigSoundManager.h"
 #include "NigSound.h"
+#include "TTexture.h"
 
 
 //#define DEBUG_VS   // Uncomment this line to debug D3D9 vertex shaders 
@@ -120,6 +121,8 @@ TObject3D			   *g_NewTiger;
 TObject3D			   *g_NewSkyBox;
 TObject3D			   *g_RWing;
 TObject3D			   *g_LWing;
+
+TTexture			   *texture;
 
 std::vector<TObject2D *> tiles;
 std::vector<TBall *>     balls;
@@ -355,10 +358,11 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
 
 	g_p_TEffect = new TEffect(pd3dDevice,L"Coursework Skeleton10.fx");
 
+	texture = new TTexture(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,L"Media\\seafloor.dds");
 
-	for(int x = 0; x < 10; x += 2){
-		for(int z = 0; z < 10; z += 2){
-			TObject2D *tile = new TObject2D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,L"Media\\seafloor.dds");
+	for(int x = 0; x < 100; x += 2){
+		for(int z = 0; z < 100; z += 2){
+			TObject2D *tile = new TObject2D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,texture);
 			tile->position->MoveTo(x,0,z);
 			tiles.push_back(tile);
 		}
@@ -701,7 +705,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if (g_b_W)			g_NewTiger->position->MoveForward(fElapsedTime*2);
 
 	if (g_b_Space){
-			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,&g_MeshTeapot);
+			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,&g_MeshTiger);
 			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
 			balls.push_back(ball);
 	}

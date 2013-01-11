@@ -40,6 +40,6 @@ protected:
 	D3DXMATRIX matWorld;
 	D3DXMATRIX matWVP;
 
-	D3DXVECTOR4		materialDiffuseColour;
+
 };
 

@@ -386,6 +386,7 @@
     <ClCompile Include="TObject.cpp" />
     <ClCompile Include="TObject2D.cpp" />
     <ClCompile Include="TObject3D.cpp" />
+    <ClCompile Include="TTexture.cpp" />
     <ClInclude Include="NigSound.h" />
     <ClInclude Include="NigSoundManager.h" />
     <ClInclude Include="Position.h" />
@@ -394,6 +395,7 @@
     <ClInclude Include="TObject.h" />
     <ClInclude Include="TObject2D.h" />
     <ClInclude Include="TObject3D.h" />
+    <ClInclude Include="TTexture.h" />
     <None Include="ClassDiagram1.cd" />
     <None Include="DXUT\Optional\directx.ico" />
     <ClInclude Include="DXUT\Core\DXUT.h" />

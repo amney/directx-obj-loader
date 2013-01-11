@@ -8,7 +8,7 @@ TBall::TBall(ID3D10Device *device, TEffect *effect, ID3D10EffectTechnique *techn
 	bouncyness = 0.8f;
 	g		   = 9.8f;
 	xSpeed = ySpeed = zSpeed = 0;	//Initially still.
-	r = 0.5;
+	r = 0.3;
 }
 
 
