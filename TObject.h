@@ -22,6 +22,8 @@ public:
 	~TObject(void);
 
 	virtual void Render(D3DMATRIX viewProjection, D3DMATRIX context) = 0;
+	virtual void SetupForRender() = 0;
+	virtual void FastRender(D3DMATRIX viewProjection, D3DMATRIX context) = 0;
 
 	TPosition *position;
 	TEffect *effect;

@@ -7,6 +7,8 @@ public:
 	~TTexture(void);
 
 	void Render();
+	void SetupForRender();
+	void FastRender();
 
 private:
 	ID3D10RenderTargetView	  *pRenderTargetView;

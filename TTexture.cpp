@@ -40,8 +40,8 @@ TTexture::TTexture(ID3D10Device *device, TEffect *effect, ID3D10EffectTechnique 
 	V( hr ) 
 
 
-		//D3D10_BUFFER_DESC bd;
-		bd.Usage = D3D10_USAGE_DEFAULT;
+	//D3D10_BUFFER_DESC bd;
+	bd.Usage = D3D10_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof( SimpleVertex ) * 4;
 	bd.BindFlags = D3D10_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
@@ -73,35 +73,12 @@ TTexture::~TTexture(void)
 
 void TTexture::Render()
 {
-	effect->g_p_MaterialDiffuseColourInShader->SetFloatVector((float *) &materialDiffuseColour);
+	SetupForRender();
+	FastRender();
+}
 
-
-
-
-	//**********************************************************************//
-	// If we have already drawn one of these things, we can speed up		//
-	// performance (considerably!!) by not repeating this next block.  But	//
-	// this only works when drawing multople objects of the same type!		//
-	//**********************************************************************//
-
-	if (true) 
-	{
-		// Set vertex buffer
-
-		UINT stride = sizeof( SimpleVertex );
-		UINT offset = 0;
-		device->IASetVertexBuffers( 0, 1, &pVertexBuffer, &stride, &offset );
-		device->IASetIndexBuffer( pIndexBuffer, DXGI_FORMAT_R32_UINT, 0 );
-
-		// Set primitive topology
-		device->IASetPrimitiveTopology( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-
-
-		//Set the texture.
-
-		effect->g_p_txDiffuseInShader->SetResource( ptxtResourceViewInShader );
-	}
-
+void TTexture::FastRender()
+{
 	D3D10_TECHNIQUE_DESC techDesc;
 	technique->GetDesc( &techDesc );
 	for( UINT p = 0; p < techDesc.Passes; ++p )
@@ -109,4 +86,22 @@ void TTexture::Render()
 		technique->GetPassByIndex( p )->Apply( 0 );
 		device->DrawIndexed(6, 0, 0 );
 	}
+}
+
+void TTexture::SetupForRender()
+{
+	effect->g_p_MaterialDiffuseColourInShader->SetFloatVector((float *) &materialDiffuseColour);
+
+	// Set vertex buffer
+	UINT stride = sizeof( SimpleVertex );
+	UINT offset = 0;
+	device->IASetVertexBuffers( 0, 1, &pVertexBuffer, &stride, &offset );
+	device->IASetIndexBuffer( pIndexBuffer, DXGI_FORMAT_R32_UINT, 0 );
+
+	// Set primitive topology
+	device->IASetPrimitiveTopology( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+
+	//Set the texture. 
+	effect->g_p_txDiffuseInShader->SetResource( ptxtResourceViewInShader );
+	
 }

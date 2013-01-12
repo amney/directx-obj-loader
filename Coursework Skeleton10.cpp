@@ -146,7 +146,7 @@ bool		 g_b_Space	    = false;
 
 bool		 g_Rotating = false;
 bool		 g_Moving	= false;
-
+ 
 bool		 g_b_W = false;
 bool		 g_b_S = false;
 
@@ -495,15 +495,21 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	g_NewSkyBox->Render(vp, ident);
 
 	//Render all of the tiles
-	for(std::vector<TObject2D *>::const_iterator it = tiles.begin(); it != tiles.end(); it++){
-		(*it)->Render(vp,ident);
+	if(tiles.size() > 0){
+		TObject2D *first_tile = tiles.front();
+		first_tile->SetupForRender();
+		for(std::vector<TObject2D *>::const_iterator it = tiles.begin(); it != tiles.end(); it++){
+			(*it)->FastRender(vp,ident);
+		}
 	}
-
 	//Render all of the balls
-	for(std::vector<TBall *>::const_iterator it = balls.begin(); it != balls.end(); it++){
-		(*it)->Render(vp,ident);
+	if(balls.size() > 0){
+		TBall *first_ball = balls.front();
+		first_ball->SetupForRender();
+		for(std::vector<TBall *>::const_iterator it = balls.begin(); it != balls.end(); it++){
+			(*it)->FastRender(vp,ident);
+		}
 	}
-
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Update the Follow Cam
