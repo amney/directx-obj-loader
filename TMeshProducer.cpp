@@ -38,3 +38,12 @@ CDXUTSDKMesh* TMeshProducer::ProduceSkyBox()
 
 	return &m_skybox;
 }
+
+CDXUTSDKMesh* TMeshProducer::ProducePipebomb()
+{
+	if(!m_pipebomb.IsLoaded()){
+		m_pipebomb.Create(m_device, L"Media\\pipebomb.sdkmesh", true );
+	}
+
+	return &m_pipebomb;
+}

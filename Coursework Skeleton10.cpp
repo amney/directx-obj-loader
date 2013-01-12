@@ -693,7 +693,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if (g_b_W)			g_NewTiger->position->MoveForward(fElapsedTime*2);
 
 	if (g_b_Space){
-			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProduceTiger());
+			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProducePipebomb());
 			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
 			balls.push_back(ball);
 	}
