@@ -478,14 +478,12 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	//****************************************************************************///
 	// Get the projection & view matrix, which are now hidden in the camera class.//
 	//****************************************************************************//
-    
     matProj = *g_Camera.GetProjMatrix();
     matView = *g_Camera.GetViewMatrix();
+
+	//Set the time in the shader to fTime
 	g_p_TEffect->g_p_fTimeInShader->SetFloat(             ( float )fTime );
 
-	//////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////////
 	// Render all of my models
 	
 	//Setup the View Projection matrix, and create a simple identity matrix
@@ -622,7 +620,7 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext )
 	SAFE_DELETE(g_RWing);
 
 
-	//Render all of the balls
+	//Delete all of the balls
 	if(balls.size() > 0){
 		for(std::vector<TBall *>::const_iterator it = balls.begin(); it != balls.end(); it++){
 			delete (*it);
@@ -630,7 +628,7 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext )
 	}
 
 
-	//Render all of the tiles
+	//Delete all of the tiles
 	if(tiles.size() > 0){
 		for(std::vector<TObject2D *>::const_iterator it = tiles.begin(); it != tiles.end(); it++){
 			delete (*it);
@@ -701,16 +699,19 @@ bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* p
 
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
 {
-    // Update the camera's position based on user input 
-    g_Camera.FrameMove( fElapsedTime );
+	// Update the controller 
 	UpdateControllerState(fElapsedTime);
+
+	// Let the production limiter know how much time has passed this frame
 	g_MeshProductionLimiter->Update(fElapsedTime);
 
+	//Update the physics for Tiger and Bombs
 	g_NewTiger->Update(fElapsedTime);
 
 	for(std::vector<TBall *>::const_iterator it = balls.begin(); it != balls.end(); it++){
 		(*it)->update(fElapsedTime);
 	}
+
 
 	//**********************************************************************//
 	// Process key presses.													//
@@ -724,26 +725,30 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if (g_b_DownArrowDown)  g_NewTiger->position->RotateByRad(-fElapsedTime,0,0);
 	if (g_b_W)			g_NewTiger->position->MoveForward(fElapsedTime*2);
 
+	//If space is pressed, and enough time has passed since the last bomb production
 	if (g_b_Space && g_MeshProductionLimiter->CanProduce()){
 			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProducePipebomb());
 			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
 			ball->position->ScaleTo(0.5,0.5,0.5);
 			balls.push_back(ball);
 	}
-	if(g_NewTiger->position->m_y < 0.55){
+
+	//If the tiger is going to be less than 0.55, stop it.
+	if(g_NewTiger->position->m_y < 0.69){
 		g_Rotating = true;
 		g_Moving = true;
 	}
 	if(g_Moving){
-		g_NewTiger->position->MoveBy(0,0.05,0);
 		xyz pos = g_NewTiger->position->GetPositionXYZ();
-		if(pos.y > 0.8) g_Moving = false;
+		g_NewTiger->position->MoveTo(pos.x,0.7,pos.z);
+		g_Moving = false;
 	}
 	if(g_Rotating){
 		g_NewTiger->position->RotateByDeg(1,0,0);
-		xyz pos = g_NewTiger->position->GetRotationXYZ();
-		if(pos.x > 0) g_Rotating = false;
+		xyz rot = g_NewTiger->position->GetRotationXYZ();
+		if(rot.x > 0) g_Rotating = false;
 	}
+
 }
 
 

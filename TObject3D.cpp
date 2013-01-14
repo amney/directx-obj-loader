@@ -8,7 +8,7 @@ TObject3D::TObject3D( ID3D10Device *device, TEffect *effect, ID3D10EffectTechniq
 {
 	this->mesh = mesh;
 	xSpeed = ySpeed = zSpeed = 0;
-	g		   = 4.8f;
+	g		   = 0.8f;
 }
 
 TObject3D::~TObject3D(void)
@@ -16,7 +16,6 @@ TObject3D::~TObject3D(void)
 }
 
 void TObject3D::Render(D3DMATRIX viewProjection, D3DMATRIX context){
-
 	SetupForRender();
 	FastRender(viewProjection,context);
 
@@ -41,9 +40,7 @@ void TObject3D::FastRender( D3DMATRIX viewProjection, D3DMATRIX context )
 	effect->g_p_MatWorldViewProjInShader->SetMatrix( ( float* )&matWVP );
 	effect->g_p_MatWorldInShader->SetMatrix(         ( float* )&matWorld );
 
-	//This seems to be sufficient to replace...
 	mesh->Render(device,technique,effect->g_p_txDiffuseInShader);
-
 }
 
 
@@ -65,6 +62,4 @@ void TObject3D::Update(float frameTime)
 	}
 
 	position->m_x += deltaX;	position->m_y += deltaY;	position->m_z += deltaZ;   // Add distances travelled.
-
-
 }
