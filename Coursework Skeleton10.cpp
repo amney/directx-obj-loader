@@ -607,15 +607,40 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext )
 {
     g_DialogResourceManager.OnD3D10DestroyDevice();
     g_SettingsDlg.OnD3D10DestroyDevice();
+
+
     SAFE_RELEASE( g_pFont10 );
-    //    SAFE_RELEASE( g_p_Effect );
     SAFE_RELEASE( g_pVertexLayout );
     SAFE_RELEASE( g_pSprite10 );
     SAFE_DELETE( g_pTxtHelper );
+
+	SAFE_DELETE(texture);
+
 	SAFE_DELETE(g_NewTiger);
 	SAFE_DELETE(g_NewSkyBox);
 	SAFE_DELETE(g_LWing);
 	SAFE_DELETE(g_RWing);
+
+
+	//Render all of the balls
+	if(balls.size() > 0){
+		for(std::vector<TBall *>::const_iterator it = balls.begin(); it != balls.end(); it++){
+			delete (*it);
+		}
+	}
+
+
+	//Render all of the tiles
+	if(tiles.size() > 0){
+		for(std::vector<TObject2D *>::const_iterator it = tiles.begin(); it != tiles.end(); it++){
+			delete (*it);
+		}
+	}
+
+
+	SAFE_DELETE(g_MeshProducer);
+	SAFE_DELETE(g_MeshProductionLimiter);
+
 	SAFE_DELETE(g_p_TEffect);
 }
 
@@ -681,6 +706,8 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	UpdateControllerState(fElapsedTime);
 	g_MeshProductionLimiter->Update(fElapsedTime);
 
+	g_NewTiger->Update(fElapsedTime);
+
 	for(std::vector<TBall *>::const_iterator it = balls.begin(); it != balls.end(); it++){
 		(*it)->update(fElapsedTime);
 	}
@@ -703,7 +730,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 			ball->position->ScaleTo(0.5,0.5,0.5);
 			balls.push_back(ball);
 	}
-
 	if(g_NewTiger->position->m_y < 0.55){
 		g_Rotating = true;
 		g_Moving = true;

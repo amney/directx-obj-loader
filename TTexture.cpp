@@ -69,6 +69,9 @@ TTexture::TTexture(ID3D10Device *device, TEffect *effect, ID3D10EffectTechnique 
 
 TTexture::~TTexture(void)
 {
+	SAFE_RELEASE(pVertexBuffer);
+	SAFE_RELEASE(pIndexBuffer);
+	SAFE_RELEASE(ptxtResourceViewInShader);
 }
 
 void TTexture::Render()

@@ -12,10 +12,12 @@ public:
 	void Render(D3DMATRIX viewProjection, D3DMATRIX context);
 	void SetupForRender();
 	void FastRender(D3DMATRIX viewProjection, D3DMATRIX context);
+	void Update(float frameTime);
 
 	CDXUTSDKMesh *mesh;
 	std::vector<TObject *> children;
 
-
+private:
+	float xSpeed, ySpeed, zSpeed, g;   //Separate speed into these 3 components.
 };
 

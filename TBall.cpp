@@ -27,36 +27,13 @@ void TBall::update(float frameTime)
 
 	position->m_x += deltaX;	position->m_y += deltaY;	position->m_z += deltaZ;   // Add distances travelled.
 	
-
-	
-//Now handle collision with the floor.   Collisions with any walls can //
-	//be handled in exactly the same way.								   //
-
-	
-
 	if (position->m_y < (groundY+r))
 		{
 		ySpeed = -ySpeed*bouncyness;
 
-		if(ySpeed < 1) ySpeed = 0; //If ySpeed is less than one, just sit on the ground
+		if(ySpeed < 1.5) ySpeed = 0; //If ySpeed is less than one, just sit on the ground
 		
 		position->m_y = groundY+r;					//Ensure above test false next frame.
-
-		//That was the maths.   Now make a sound.
-		//playSound();
 		}
-
-
-
-	//This is art.   If the ball is within 2* radius of the floor, squash//
-	//it.																 //
-
-	/*if (position->m_y < (groundY+r*2))
-		{
-		FLOAT scaleY = (position->m_y - groundY);
-		position->ScaleTo(1, scaleY, 1);
-		}
-	else position->ScaleTo(1, 1, 1); */  //Not very good (fast) to do this every frame.
-
 
 }

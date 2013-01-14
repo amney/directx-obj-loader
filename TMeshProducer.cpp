@@ -10,6 +10,10 @@ TMeshProducer::TMeshProducer(ID3D10Device *device)
 
 TMeshProducer::~TMeshProducer(void)
 {
+	m_tiger.Destroy();
+	m_wing.Destroy();
+	m_skybox.Destroy();
+	m_pipebomb.Destroy();
 }
 
 CDXUTSDKMesh* TMeshProducer::ProduceTiger()

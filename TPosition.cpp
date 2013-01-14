@@ -80,6 +80,9 @@ void TPosition::MoveForward(float frameTime)
 	// lines to the ------------- and this should still work, but doesn't//
 	// - Nigel.                                                          //
 	//*******************************************************************//
+
+	frameTime *= 4;
+
 	D3DXMATRIX matRotateXYZ;
 
 	D3DXMatrixRotationYawPitchRoll(&matRotateXYZ,m_ry,m_rx,m_rz);

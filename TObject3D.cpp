@@ -7,6 +7,8 @@
 TObject3D::TObject3D( ID3D10Device *device, TEffect *effect, ID3D10EffectTechnique *technique, CDXUTSDKMesh *mesh) : TObject(device, effect, technique)
 {
 	this->mesh = mesh;
+	xSpeed = ySpeed = zSpeed = 0;
+	g		   = 4.8f;
 }
 
 TObject3D::~TObject3D(void)
@@ -41,5 +43,28 @@ void TObject3D::FastRender( D3DMATRIX viewProjection, D3DMATRIX context )
 
 	//This seems to be sufficient to replace...
 	mesh->Render(device,technique,effect->g_p_txDiffuseInShader);
+
+}
+
+
+void TObject3D::Update(float frameTime)
+{
+
+	FLOAT deltaX = xSpeed*frameTime;  //Calculate distance travelled in
+	FLOAT deltaY = ySpeed*frameTime;  //x, y, z directions.
+	FLOAT deltaZ = zSpeed*frameTime;
+
+
+	if(position->m_y > 0.8){
+
+	ySpeed -= g*frameTime;	  //Acceleration downwards due to gravity.
+
+	}
+	else{
+		ySpeed = 0;
+	}
+
+	position->m_x += deltaX;	position->m_y += deltaY;	position->m_z += deltaZ;   // Add distances travelled.
+
 
 }

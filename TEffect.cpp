@@ -109,7 +109,8 @@ TEffect::TEffect( ID3D10Device *device, LPCTSTR fileName )
 
 TEffect::~TEffect(void)
 {
-	//SAFE_DELETE(g_p_Effect);
+	SAFE_RELEASE(g_pVertexLayout);
+	SAFE_RELEASE(g_p_Effect);
 }
 
 
