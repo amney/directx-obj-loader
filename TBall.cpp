@@ -32,9 +32,14 @@ void TBall::update(float frameTime)
 //Now handle collision with the floor.   Collisions with any walls can //
 	//be handled in exactly the same way.								   //
 
+	
+
 	if (position->m_y < (groundY+r))
 		{
-		ySpeed = -ySpeed*bouncyness;	//Bounce back.
+		ySpeed = -ySpeed*bouncyness;
+
+		if(ySpeed < 1) ySpeed = 0; //If ySpeed is less than one, just sit on the ground
+		
 		position->m_y = groundY+r;					//Ensure above test false next frame.
 
 		//That was the maths.   Now make a sound.
