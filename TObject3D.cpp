@@ -8,7 +8,7 @@ TObject3D::TObject3D( ID3D10Device *device, TEffect *effect, ID3D10EffectTechniq
 {
 	this->mesh = mesh;
 	xSpeed = ySpeed = zSpeed = 0;
-	g		   = 0.8f;
+	g		   = 2.0f;
 }
 
 TObject3D::~TObject3D(void)

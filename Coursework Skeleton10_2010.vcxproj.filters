@@ -15,6 +15,9 @@
     <Filter Include="Sound">
       <UniqueIdentifier>{ade9223d-337f-496d-b322-fc49765617a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TObject">
+      <UniqueIdentifier>{c0e34530-8ae7-456c-9c1c-b2a98d78093c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="DXUT\Optional\directx.ico">
@@ -78,21 +81,34 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Coursework Skeleton10.cpp" />
-    <ClCompile Include="TObject.cpp" />
-    <ClCompile Include="TObject2D.cpp" />
-    <ClCompile Include="TObject3D.cpp" />
-    <ClCompile Include="TEffect.cpp" />
-    <ClCompile Include="TBall.cpp" />
     <ClCompile Include="NigSound.cpp">
       <Filter>Sound</Filter>
     </ClCompile>
     <ClCompile Include="NigSoundManager.cpp">
       <Filter>Sound</Filter>
     </ClCompile>
-    <ClCompile Include="TTexture.cpp" />
+    <ClCompile Include="TObject.cpp">
+      <Filter>TObject</Filter>
+    </ClCompile>
+    <ClCompile Include="TObject2D.cpp">
+      <Filter>TObject</Filter>
+    </ClCompile>
+    <ClCompile Include="TObject3D.cpp">
+      <Filter>TObject</Filter>
+    </ClCompile>
+    <ClCompile Include="TEffect.cpp" />
+    <ClCompile Include="TFollowCam.cpp" />
     <ClCompile Include="TMeshProducer.cpp" />
-    <ClCompile Include="TPosition.cpp" />
     <ClCompile Include="TMeshProductionLimiter.cpp" />
+    <ClCompile Include="TPosition.cpp">
+      <Filter>TObject</Filter>
+    </ClCompile>
+    <ClCompile Include="TTexture.cpp">
+      <Filter>TObject</Filter>
+    </ClCompile>
+    <ClCompile Include="TBall.cpp">
+      <Filter>TObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Coursework Skeleton10.fx">
@@ -106,21 +122,34 @@
     <ResourceCompile Include="SimpleSample.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ClInclude Include="TObject.h" />
-    <ClInclude Include="TObject2D.h" />
-    <ClInclude Include="TObject3D.h" />
-    <ClInclude Include="TEffect.h" />
-    <ClInclude Include="TBall.h" />
     <ClInclude Include="NigSound.h">
       <Filter>Sound</Filter>
     </ClInclude>
     <ClInclude Include="NigSoundManager.h">
       <Filter>Sound</Filter>
     </ClInclude>
-    <ClInclude Include="TTexture.h" />
+    <ClInclude Include="TObject3D.h">
+      <Filter>TObject</Filter>
+    </ClInclude>
+    <ClInclude Include="TObject.h">
+      <Filter>TObject</Filter>
+    </ClInclude>
+    <ClInclude Include="TObject2D.h">
+      <Filter>TObject</Filter>
+    </ClInclude>
+    <ClInclude Include="TEffect.h" />
+    <ClInclude Include="TFollowCam.h" />
     <ClInclude Include="TMeshProducer.h" />
-    <ClInclude Include="TPosition.h" />
     <ClInclude Include="TMeshProductionLimiter.h" />
+    <ClInclude Include="TTexture.h">
+      <Filter>TObject</Filter>
+    </ClInclude>
+    <ClInclude Include="TPosition.h">
+      <Filter>TObject</Filter>
+    </ClInclude>
+    <ClInclude Include="TBall.h">
+      <Filter>TObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

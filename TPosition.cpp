@@ -5,7 +5,7 @@
 TPosition::TPosition(void)
 {
 	initVecDir = D3DXVECTOR3(0,0,-1);
-	speed = 0;
+	m_thrust = 0;
 	MoveTo(0,0,0);
 	RotateToDeg(0,0,0);
 	ScaleTo(1,1,1);
@@ -81,8 +81,7 @@ void TPosition::MoveForward(float frameTime)
 	// lines to the ------------- and this should still work, but doesn't//
 	// - Nigel.                                                          //
 	//*******************************************************************//
-
-	frameTime *= 4;
+	m_thrust *= 0.992;
 
 	D3DXMATRIX matRotateXYZ;
 
@@ -97,9 +96,12 @@ void TPosition::MoveForward(float frameTime)
 	D3DXVec3TransformCoord(&newVecDir, &initVecDir, &matRotateXYZ);
 	D3DXVec3Normalize( &currentVecDir, &newVecDir );
 
+	float adjustedSpeed = m_thrust * frameTime;
 
-	MoveBy(currentVecDir.x*frameTime,currentVecDir.y*frameTime,currentVecDir.z*frameTime);
+	MoveBy(currentVecDir.x*adjustedSpeed,currentVecDir.y*adjustedSpeed,currentVecDir.z*adjustedSpeed);
 }
+
+
 
 void TPosition::LookUp(float ByAngle, float MaxAngle)
 {
@@ -162,4 +164,10 @@ void TPosition::SetPositionXYZ( xyz Position )
 	m_x = Position.x;
 	m_y = Position.y;
 	m_z = Position.z;
+}
+
+void TPosition::IncreaseThrust( float thrust )
+{
+	m_thrust += thrust;
+	m_thrust = min(m_thrust,30);
 }

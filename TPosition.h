@@ -31,6 +31,7 @@ public:
 	void SetScaleXYZ(xyz Scale);
 	void SetPositionXYZ(xyz Position);
 
+	void IncreaseThrust(float thrust);
 	void MoveForward(float frameTime);
 	void LookUp(float ByAngle, float MaxAngle);
 	void LookDown(float ByAngle, float MaxAngle);
@@ -39,11 +40,7 @@ public:
 	float m_x, m_y, m_z;
 	float m_rx, m_ry, m_rz;
 	float m_sx, m_sy, m_sz;
-
-	float speed;
-
+	float m_thrust;
 	D3DXVECTOR3 initVecDir;
-
-
 };
 

@@ -380,6 +380,7 @@
   <ItemGroup>
     <ClCompile Include="NigSound.cpp" />
     <ClCompile Include="NigSoundManager.cpp" />
+    <ClCompile Include="TFollowCam.cpp" />
     <ClCompile Include="TMeshProductionLimiter.cpp" />
     <ClCompile Include="TPosition.cpp" />
     <ClCompile Include="TBall.cpp" />
@@ -391,6 +392,7 @@
     <ClCompile Include="TTexture.cpp" />
     <ClInclude Include="NigSound.h" />
     <ClInclude Include="NigSoundManager.h" />
+    <ClInclude Include="TFollowCam.h" />
     <ClInclude Include="TMeshProductionLimiter.h" />
     <ClInclude Include="TPosition.h" />
     <ClInclude Include="TBall.h" />

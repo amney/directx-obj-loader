@@ -64,6 +64,7 @@
 #include "TTexture.h"
 #include "TMeshProducer.h"
 #include "TMeshProductionLimiter.h"
+#include "TFollowCam.h"
 
 
 //#define DEBUG_VS   // Uncomment this line to debug D3D9 vertex shaders 
@@ -103,38 +104,27 @@ ID3DX10Font*                g_pFont10 = NULL;
 ID3DX10Sprite*              g_pSprite10 = NULL;
 ID3D10InputLayout*          g_pVertexLayout = NULL;
 
+//My global variables
 
-//**************************************************************************//
-// Nigel added variables.  All in Hungarian notation, of course.  Don't	//
-// feel that you have to use Hungarian notation, though, especially if you //
-// aren't Hungarian.														//
-//																			//
-// There are many global variables here.  I suggest that at some point you	//
-// 1: Don't tell Mary that you are using so many globals.					//
-// 2: Consider encapsulating some of this stuff into classes of your own.	//
-//**************************************************************************//
+TMeshProducer			*g_MeshProducer;
+TMeshProductionLimiter	*g_MeshProductionLimiter;
+TFollowCam				*g_FollowCam;
 
-TMeshProducer	       *g_MeshProducer;
-TMeshProductionLimiter *g_MeshProductionLimiter;
+TObject3D				*g_Tiger;
+TObject3D				*g_Skysphere;
+TObject3D				*g_RWing;
+TObject3D				*g_LWing;
 
-TObject3D			   *g_NewTiger;
-TObject3D			   *g_NewSkyBox;
-TObject3D			   *g_RWing;
-TObject3D			   *g_LWing;
+TTexture				*texture;
 
-TTexture			   *texture;
+std::vector<TObject2D *>tiles;
+std::vector<TBall *>    balls;
 
-std::vector<TObject2D *> tiles;
-std::vector<TBall *>     balls;
+TEffect					*g_p_TEffect;
 
-TEffect				   *g_p_TEffect;
-
-NigSoundManager soundManager;	//You need one of these.
-NigSound sound1(&soundManager); //And one of these per sound.
-NigSound sound2(&soundManager);
-NigSound sound3(&soundManager);
-
-DWORD sound1State = 0;
+//Sound from Nigel sample code
+NigSoundManager			gSoundManager;	//You need one of these.
+NigSound				gBombDropSound(&gSoundManager); //And one of these per sound.
 
 //**********************************************************************//
 // Variables to control the movement of the tiger.						//
@@ -219,7 +209,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 {
     // Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
-    _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
     // DXUT will create and use the best device (either D3D9 or D3D10) 
@@ -322,9 +312,9 @@ bool CALLBACK IsD3D10DeviceAcceptable( UINT Adapter, UINT Output, D3D10_DRIVER_T
 HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
                                       void* pUserContext )
 {
-	g_p_d3dDevice = pd3dDevice;
-	g_MeshProducer = new TMeshProducer(pd3dDevice);
-	g_MeshProductionLimiter = new TMeshProductionLimiter(0.2);
+	g_p_d3dDevice =				pd3dDevice;
+	g_MeshProducer =			new TMeshProducer(pd3dDevice);
+	g_MeshProductionLimiter =	new TMeshProductionLimiter(0.2);
 
     HRESULT hr;
 
@@ -336,28 +326,18 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
                                 L"Arial", &g_pFont10 ) );
     g_pTxtHelper = new CDXUTTextHelper( NULL, NULL, g_pFont10, g_pSprite10, 15 );
 
-
-	//**********************************************************************//
-	// We use the camera object to store the View and Projection matrices.  //
-	// The projection matrix is created in OnD3D10ResizedSwapChain().		//
-	// Setup the camera's view parameters here, which creates the view		//
-	// matrix.																//
-	//**********************************************************************//
-    
+	//Setup some view parameters
 	D3DXVECTOR3 vecEye( 0.0f, 1.0f, -5.0f );
     D3DXVECTOR3 vecAt ( 0.0f, 0.0f, 0.0f );
     g_Camera.SetViewParams( &vecEye, &vecAt );
 
-
-	//**********************************************************************//
-	// Vertex format for our mesh.  The vertices are not coloured, but 		//
-	// there is a texture u and v here.										//
-	//**********************************************************************//
-
+	//Create an effect holder
 	g_p_TEffect = new TEffect(pd3dDevice,L"Coursework Skeleton10.fx");
 
+	//Create the texture for the floor
 	texture = new TTexture(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,L"Media\\seafloor.dds");
 
+	//Create an array of 20*20 tiles
 	for(int x = 0; x < 20; x++){
 		for(int z = 0; z < 20; z++){
 			TObject2D *tile = new TObject2D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,texture);
@@ -367,11 +347,13 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
 		}
 	}
 
-	g_NewTiger = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,g_MeshProducer->ProduceTiger());
-	g_NewTiger->position->MoveTo(100,0.70,100);
-	g_NewTiger->position->RotateToDeg(0,0,0);
-	g_NewTiger->position->ScaleTo(1,1,1);
+	//Create a tiger, set him down somewhere within the tiles, and raise his y so his feet aren't under the tiles.
+	g_Tiger = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,g_MeshProducer->ProduceTiger());
+	g_Tiger->position->MoveTo(100,0.70,100);
+	g_Tiger->position->RotateToDeg(0,0,0);
+	g_Tiger->position->ScaleTo(1,1,1);
 
+	//Create a couple of wings, and put them into the right positions
 	g_LWing = new TObject3D(pd3dDevice, g_p_TEffect, g_p_TEffect->g_p_TechniqueRenderWing, g_MeshProducer->ProduceWing());
 	g_RWing = new TObject3D(pd3dDevice, g_p_TEffect, g_p_TEffect->g_p_TechniqueRenderWing, g_MeshProducer->ProduceWing());
 	
@@ -379,33 +361,23 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
 	g_LWing->position->MoveBy(-0.2, 0.4, -0.5);
 	g_RWing->position->MoveBy(0.2, 0.4, -0.5);
 
-	g_NewTiger->children.push_back(g_LWing);
-	g_NewTiger->children.push_back(g_RWing);
+	//Tell the tiger that the wings are it's children, so that it should render them with it's world matrix
+	g_Tiger->children.push_back(g_LWing);
+	g_Tiger->children.push_back(g_RWing);
 
-	g_NewSkyBox = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderSkyBox, g_MeshProducer->ProduceSkyBox());
-	g_NewSkyBox->position->MoveTo(0,0,0);
-	g_NewSkyBox->position->RotateToDeg(0,0,0);
-	g_NewSkyBox->position->ScaleTo(0.1,0.1,0.1);
+	//Create a skysphere at 0,0,0 and set to an appropriate scale
+	g_Skysphere = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderSkyBox, g_MeshProducer->ProduceSkyBox());
+	g_Skysphere->position->MoveTo(0,0,0);
+	g_Skysphere->position->RotateToDeg(0,0,0);
+	g_Skysphere->position->ScaleTo(0.1,0.1,0.1);
 
-	//V( g_MeshTeapot.Create( pd3dDevice, L"Media\\Teapot.sdkmesh", true ) );
+	//Setup the bomb drop sound
+	V(gSoundManager.init());
+	V(gBombDropSound.createSoundFromFile(L"Media\\bomb.wav", 2));
 
-	//**********************************************************************//
-	// Create the sounds.													//
-	//**********************************************************************//
 
-	V(soundManager.init());
-	V(sound1.createSoundFromFile(L"Media\\Clank.wav", 1));
-	
-	sound2.numAudioChannels = 1;		//I'm afraid you have to guess these
-	sound2.bitsPerSample = 8;
-	sound2.samplingRate = 12000;
-	V(sound2.createSoundFromFile(L"Media\\Horse.wav", 2));
-	
-	sound3.numAudioChannels = 1;		//I'm afraid you have to guess these
-	sound3.bitsPerSample = 8;
-	sound3.samplingRate = 24000;
-
-	V(sound3.createSoundFromFile(L"Media\\Bark.wav", 1));
+	//Setup the follow cam conveninece class
+	g_FollowCam = new TFollowCam(g_Tiger, &g_Camera);
 
     return S_OK;
 }
@@ -455,11 +427,7 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
     D3DXMATRIX matView;
     D3DXMATRIX matProj;
 
-	//////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////////
 	// This is Generic Code used to setup the view and give it a 'blueish' background
-
     float ClearColor[4] = { 0.176f, 0.196f, 0.667f, 0.0f };
     ID3D10RenderTargetView* pRTV = DXUTGetD3D10RenderTargetView();
     pd3dDevice->ClearRenderTargetView( pRTV, ClearColor );
@@ -483,18 +451,17 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
     matView = *g_Camera.GetViewMatrix();
 
 	//Set the time in the shader to fTime
-	g_p_TEffect->g_p_fTimeInShader->SetFloat(             ( float )fTime );
+	g_p_TEffect->g_p_fTimeInShader->SetFloat(( float )fTime);
 
-	// Render all of my models
-	
+
 	//Setup the View Projection matrix, and create a simple identity matrix
 	D3DXMATRIX vp = matView*matProj;
 	D3DXMATRIX ident;
 	D3DXMatrixIdentity(&ident);
 
 	//Render the sky and the tiger
-	g_NewTiger->Render(vp,ident);
-	g_NewSkyBox->Render(vp, ident);
+	g_Tiger->Render(vp,ident);
+	g_Skysphere->Render(vp, ident);
 
 	//Render all of the balls
 	if(balls.size() > 0){
@@ -515,65 +482,11 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	}
 
 
-	////////////////////////////////////////////////////////////////////////////////
 	// Update the Follow Cam
-	////////////////////////////////////////////////////////////////////////////////
+	g_FollowCam->Update();
 
-	//**************************************************************//
-	//Put the camera on the thing.   We have to create a new viewer //
-	// matrix.  Here the viewer matris is hidden in the camera.  In //
-	// fact the camera class Microsoft give us can follow objects	//
-	// anyway, if somebody can find out how!						//
-	//**************************************************************//
-
-	D3DXVECTOR3 viewerPos;
-	D3DXVECTOR3 lookAtThis;
-	D3DXVECTOR3 up         ( 0.0f, 1.0f, 0.0f );
-	D3DXVECTOR3 newUp;
-
-	//Set the viewer's position to the position of the thing.
-
-	viewerPos.x = g_NewTiger->position->m_x;   viewerPos.y = g_NewTiger->position->m_y;
-	viewerPos.z = g_NewTiger->position->m_z;
-
-	//*****************************************************************//
-	// Create a new vector for the direction for the virwer to look in.//
-	// We do this by getting the object's initial direction vector,    //
-	// and multiplying it by the thing's combined x, y, z rotation     //
-	// matrices.   Up is still up; I'll leave that to you!             //
-	//*****************************************************************//
-
-	g_NewTiger->setupWorldMatrices();
-
-	D3DXVECTOR3 newDir, lookAtPoint;
-	D3DXVec3TransformCoord(&newDir, &g_NewTiger->position->initVecDir, &g_NewTiger->getRotationMatrix());
-
-	// The viewer should now be looking at a point a little in front//
-	// of the object.   I hope.   Nigel.                            //
-
-	D3DXVec3Normalize(&newDir, &newDir);
-			
-	newDir *= -10;
-
-	viewerPos += newDir;
-	viewerPos.y += 3;
-			
-	lookAtPoint.x = g_NewTiger->position->m_x;
-	lookAtPoint.y = g_NewTiger->position->m_y;
-	lookAtPoint.z = g_NewTiger->position->m_z;
-
-	g_Camera.SetViewParams(&viewerPos, &lookAtPoint);
-
-   
-	//**********************************************************************//
-	// Update the status of the sounds.										//
-	//**********************************************************************//
-
-	sound1.updateStatus();
-	sound2.updateStatus();
-	sound3.updateStatus();
-	sound1.pXACTWave->GetState(&sound1State);
-
+	//Update sound status
+	gBombDropSound.updateStatus();
 
 	//****************************************************************************//
 	// And finally, render the DXUT buttons and the thing which grandly calls	  //
@@ -584,7 +497,6 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
     RenderText();
     g_HUD.OnRender( fElapsedTime );
     g_SampleUI.OnRender( fElapsedTime );
-
     DXUT_EndPerfEvent();
 }
 
@@ -607,19 +519,16 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext )
     g_DialogResourceManager.OnD3D10DestroyDevice();
     g_SettingsDlg.OnD3D10DestroyDevice();
 
-
     SAFE_RELEASE( g_pFont10 );
     SAFE_RELEASE( g_pVertexLayout );
     SAFE_RELEASE( g_pSprite10 );
     SAFE_DELETE( g_pTxtHelper );
 
 	SAFE_DELETE(texture);
-
-	SAFE_DELETE(g_NewTiger);
-	SAFE_DELETE(g_NewSkyBox);
+	SAFE_DELETE(g_Tiger);
+	SAFE_DELETE(g_Skysphere);
 	SAFE_DELETE(g_LWing);
 	SAFE_DELETE(g_RWing);
-
 
 	//Delete all of the balls
 	if(balls.size() > 0){
@@ -627,7 +536,6 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext )
 			delete (*it);
 		}
 	}
-
 
 	//Delete all of the tiles
 	if(tiles.size() > 0){
@@ -639,7 +547,6 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext )
 
 	SAFE_DELETE(g_MeshProducer);
 	SAFE_DELETE(g_MeshProductionLimiter);
-
 	SAFE_DELETE(g_p_TEffect);
 }
 
@@ -707,24 +614,24 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	g_MeshProductionLimiter->Update(fElapsedTime);
 
 	//Update the physics for Tiger and Bombs
-	g_NewTiger->Update(fElapsedTime);
-
+	g_Tiger->Update(fElapsedTime);
+	g_Tiger->position->MoveForward(fElapsedTime);
 	for(std::vector<TBall *>::const_iterator it = balls.begin(); it != balls.end(); it++){
 		(*it)->update(fElapsedTime);
 	}
 
-
+	
 	//**********************************************************************//
 	// Process key presses.													//
 	//**********************************************************************//
 
 	fElapsedTime *= 2;
 	
-	if (g_b_LeftArrowDown)  g_NewTiger->position->RotateByRad(0,-fElapsedTime,0);	//Rotate about y in a frame rate independent
-	if (g_b_RightArrowDown) g_NewTiger->position->RotateByRad(0,fElapsedTime,0); //way.  Case is not used as it is possible 	
-	if (g_b_UpArrowDown)    g_NewTiger->position->LookUp(fElapsedTime,D3DXToRadian(35.0));//g_NewTiger->position->RotateByRad(fElapsedTime,0,0);	//that several keys could be down at once.
-	if (g_b_DownArrowDown)  g_NewTiger->position->LookDown(-fElapsedTime,D3DXToRadian(-35.0));
-	if (g_b_W)			g_NewTiger->position->MoveForward(fElapsedTime*2);
+	if (g_b_LeftArrowDown)  g_Tiger->position->RotateByRad(0,-fElapsedTime,0);	//Rotate about y in a frame rate independent
+	if (g_b_RightArrowDown) g_Tiger->position->RotateByRad(0,fElapsedTime,0); //way.  Case is not used as it is possible 	
+	if (g_b_UpArrowDown)    g_Tiger->position->LookUp(fElapsedTime,D3DXToRadian(35.0));//that several keys could be down at once.
+	if (g_b_DownArrowDown)  g_Tiger->position->LookDown(-fElapsedTime,D3DXToRadian(-35.0));
+	if (g_b_W)			g_Tiger->position->IncreaseThrust(1);
 
 	//If space is pressed, and enough time has passed since the last bomb production
 	if (g_b_Space){
@@ -732,25 +639,25 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	}
 
 	//If the tiger is going to be less than 0.55, stop it.
-	if(g_NewTiger->position->m_y < 0.69){
+	if(g_Tiger->position->m_y < 0.69){
 		g_Rotating = true;
 		g_Moving = true;
 	}
 	if(g_Moving){
-		xyz pos = g_NewTiger->position->GetPositionXYZ();
-		g_NewTiger->position->MoveTo(pos.x,0.7,pos.z);
+		xyz pos = g_Tiger->position->GetPositionXYZ();
+		g_Tiger->position->MoveTo(pos.x,0.7,pos.z);
 		g_Moving = false;
 	}
 	if(g_Rotating){
-		g_NewTiger->position->RotateByDeg(1,0,0);
-		xyz rot = g_NewTiger->position->GetRotationXYZ();
+		g_Tiger->position->RotateByDeg(1,0,0);
+		xyz rot = g_Tiger->position->GetRotationXYZ();
 		if(rot.x > 0) g_Rotating = false;
 	}
 
-	//Keep the skybox relative to the tiger
-	xyz pos = g_NewTiger->position->GetPositionXYZ();
+	//Keep the skysphere relative to the tiger, excluding the y direction
+	xyz pos = g_Tiger->position->GetPositionXYZ();
 	pos.y = 0;
-	g_NewSkyBox->position->SetPositionXYZ(pos);
+	g_Skysphere->position->SetPositionXYZ(pos);
 }
 
 
@@ -799,46 +706,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
 {
 switch( nChar )
-    {
-        
-		//******************************************************************//
-		// Nigel code to rotate the tiger.									//
-		//******************************************************************//
-
+    {    
 		case VK_LEFT:  g_b_LeftArrowDown  = bKeyDown; break;
 		case VK_RIGHT: g_b_RightArrowDown = bKeyDown; break;
 		case VK_UP:    g_b_UpArrowDown    = bKeyDown; break;
 		case VK_DOWN:  g_b_DownArrowDown  = bKeyDown; break;
-		case VK_SPACE:  
-			g_b_Space		  = bKeyDown; 
-			sound1.play();
-			break;
+		case VK_SPACE: g_b_Space		  = bKeyDown; break;
 		case 'W':	   g_b_W			  = bKeyDown; break;
-
     }
-
-/*	switch (nChar) 
-	{
-		case '1': 
-			hr = sound1.play(); 
-			//sound1.stop(XACT_FLAG_STOP_RELEASE);
-			break;
-		case '2': 
-			sound2.play();
-			//sound2.stop(XACT_FLAG_STOP_RELEASE); 
-			break;
-		case '3': 
-			sound3.play(); 
-			//sound3.stop(XACT_FLAG_STOP_RELEASE); 
-			break;
-
-		case 'S': 
-			hr = sound1.stop(XACT_FLAG_STOP_RELEASE); 
-			break;
-
-
-	} */
-
 }
 
 
@@ -892,8 +767,8 @@ void UpdateControllerState(float frameTime)
 		float ly = g_Controllers[0].state.Gamepad.sThumbLX;	//Left Joypad 
 		float lx = g_Controllers[0].state.Gamepad.sThumbLY; //Left Joypad 
 
-		float ry = g_Controllers[0].state.Gamepad.sThumbRX;	//Left Joypad 
-		float rx = g_Controllers[0].state.Gamepad.sThumbRY; //Left Joypad
+		float rx = g_Controllers[0].state.Gamepad.sThumbRX;	//Left Joypad 
+		float ry = g_Controllers[0].state.Gamepad.sThumbRY; //Left Joypad
 
 		//**********************************************************************//
 		// Joypads have a dead zone.  To prevent noise, zero the reading if the //
@@ -908,13 +783,14 @@ void UpdateControllerState(float frameTime)
 
 		//**********************************************************************//
 		// Scale the result.  Full scale is + / - 32767.  Multiply by 90  for a //
-		// max ov 90 degrees and convert to radians.							//
+		// max of 90 degrees and convert to radians.							//
 		//**********************************************************************//
 
-		g_NewTiger->position->RotateByRad(0, D3DXToRadian(( ry / (12767.0))), 0);
-		g_NewTiger->position->RotateByRad( D3DXToRadian((rx / (12767.0))),0,0);
-
-		if(lx > 0) g_NewTiger->position->MoveForward(frameTime*4);
+		if(ry > 0) g_Tiger->position->LookUp( D3DXToRadian(( ry / (12767.0))),D3DXToRadian(35.0));
+		else  g_Tiger->position->LookDown( D3DXToRadian(( ry / (12767.0))),D3DXToRadian(-35.0));
+	
+		g_Tiger->position->RotateByRad(0, D3DXToRadian(( rx / (12767.0))), 0);
+		if(lx > 0) g_Tiger->position->MoveForward(frameTime*4);
 
 		short buttons = g_Controllers[0].state.Gamepad.wButtons;
 
@@ -926,10 +802,14 @@ void UpdateControllerState(float frameTime)
 
 void SpawnBomb()
 {
+	//If we are allowed to spawn a bomb, do so at the tigers position 
 	if(g_MeshProductionLimiter->CanProduce()){
 			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProducePipebomb());
-			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
+			ball->position->MoveTo(g_Tiger->position->m_x,g_Tiger->position->m_y,g_Tiger->position->m_z);
 			ball->position->ScaleTo(0.5,0.5,0.5);
 			balls.push_back(ball);
+
+			//Play a bomb drop sound
+			gBombDropSound.play();
 	}
 }
