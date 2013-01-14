@@ -5,6 +5,7 @@
 TPosition::TPosition(void)
 {
 	initVecDir = D3DXVECTOR3(0,0,-1);
+	speed = 0;
 	MoveTo(0,0,0);
 	RotateToDeg(0,0,0);
 	ScaleTo(1,1,1);
@@ -98,6 +99,18 @@ void TPosition::MoveForward(float frameTime)
 
 
 	MoveBy(currentVecDir.x*frameTime,currentVecDir.y*frameTime,currentVecDir.z*frameTime);
+}
+
+void TPosition::LookUp(float ByAngle, float MaxAngle)
+{
+	if((m_rx + ByAngle) > MaxAngle) return;
+	m_rx += ByAngle;
+}
+
+void TPosition::LookDown(float ByAngle, float MaxAngle)
+{
+	if((m_rx + ByAngle) < MaxAngle) return;
+	m_rx += ByAngle;
 }
 
 xyz TPosition::GetRotationXYZ()

@@ -207,7 +207,7 @@ void CALLBACK OnD3D10DestroyDevice( void* pUserContext );
 void InitApp();
 void RenderText();
 void UpdateControllerState(float frameTime);
-
+void SpawnBomb();
 
 
 
@@ -361,14 +361,14 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
 	for(int x = 0; x < 20; x++){
 		for(int z = 0; z < 20; z++){
 			TObject2D *tile = new TObject2D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,texture);
-			tile->position->ScaleBy(5,0,5);
-			tile->position->MoveTo(x*12,0,z*12);
+			tile->position->ScaleBy(3,0,3);
+			tile->position->MoveTo(x*8,0,z*8);
 			tiles.push_back(tile);
 		}
 	}
 
 	g_NewTiger = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,g_MeshProducer->ProduceTiger());
-	g_NewTiger->position->MoveTo(200,0.70,200);
+	g_NewTiger->position->MoveTo(100,0.70,100);
 	g_NewTiger->position->RotateToDeg(0,0,0);
 	g_NewTiger->position->ScaleTo(1,1,1);
 
@@ -722,16 +722,13 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	
 	if (g_b_LeftArrowDown)  g_NewTiger->position->RotateByRad(0,-fElapsedTime,0);	//Rotate about y in a frame rate independent
 	if (g_b_RightArrowDown) g_NewTiger->position->RotateByRad(0,fElapsedTime,0); //way.  Case is not used as it is possible 	
-	if (g_b_UpArrowDown)    g_NewTiger->position->RotateByRad(fElapsedTime,0,0);	//that several keys could be down at once.
-	if (g_b_DownArrowDown)  g_NewTiger->position->RotateByRad(-fElapsedTime,0,0);
+	if (g_b_UpArrowDown)    g_NewTiger->position->LookUp(fElapsedTime,D3DXToRadian(35.0));//g_NewTiger->position->RotateByRad(fElapsedTime,0,0);	//that several keys could be down at once.
+	if (g_b_DownArrowDown)  g_NewTiger->position->LookDown(-fElapsedTime,D3DXToRadian(-35.0));
 	if (g_b_W)			g_NewTiger->position->MoveForward(fElapsedTime*2);
 
 	//If space is pressed, and enough time has passed since the last bomb production
-	if (g_b_Space && g_MeshProductionLimiter->CanProduce()){
-			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProducePipebomb());
-			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
-			ball->position->ScaleTo(0.5,0.5,0.5);
-			balls.push_back(ball);
+	if (g_b_Space){
+		SpawnBomb();
 	}
 
 	//If the tiger is going to be less than 0.55, stop it.
@@ -918,5 +915,21 @@ void UpdateControllerState(float frameTime)
 		g_NewTiger->position->RotateByRad( D3DXToRadian((rx / (12767.0))),0,0);
 
 		if(lx > 0) g_NewTiger->position->MoveForward(frameTime*4);
+
+		short buttons = g_Controllers[0].state.Gamepad.wButtons;
+
+		if(buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER){
+			SpawnBomb();
+		}
+	}
+}
+
+void SpawnBomb()
+{
+	if(g_MeshProductionLimiter->CanProduce()){
+			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProducePipebomb());
+			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
+			ball->position->ScaleTo(0.5,0.5,0.5);
+			balls.push_back(ball);
 	}
 }
