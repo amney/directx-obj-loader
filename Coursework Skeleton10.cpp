@@ -324,7 +324,7 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
 {
 	g_p_d3dDevice = pd3dDevice;
 	g_MeshProducer = new TMeshProducer(pd3dDevice);
-	g_MeshProductionLimiter = new TMeshProductionLimiter(1);
+	g_MeshProductionLimiter = new TMeshProductionLimiter(0.2);
 
     HRESULT hr;
 
@@ -497,14 +497,6 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 	g_NewTiger->Render(vp,ident);
 	g_NewSkyBox->Render(vp, ident);
 
-	//Render all of the tiles
-	if(tiles.size() > 0){
-		TObject2D *first_tile = tiles.front();
-		first_tile->SetupForRender();
-		for(std::vector<TObject2D *>::const_iterator it = tiles.begin(); it != tiles.end(); it++){
-			(*it)->FastRender(vp,ident);
-		}
-	}
 	//Render all of the balls
 	if(balls.size() > 0){
 		TBall *first_ball = balls.front();
@@ -513,6 +505,16 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 			(*it)->FastRender(vp,ident);
 		}
 	}
+
+	//Render all of the tiles
+	if(tiles.size() > 0){
+		TObject2D *first_tile = tiles.front();
+		first_tile->SetupForRender();
+		for(std::vector<TObject2D *>::const_iterator it = tiles.begin(); it != tiles.end(); it++){
+			(*it)->FastRender(vp,ident);
+		}
+	}
+
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Update the Follow Cam
@@ -698,6 +700,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if (g_b_Space && g_MeshProductionLimiter->CanProduce()){
 			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProducePipebomb());
 			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
+			ball->position->ScaleTo(0.5,0.5,0.5);
 			balls.push_back(ball);
 	}
 

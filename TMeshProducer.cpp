@@ -42,7 +42,7 @@ CDXUTSDKMesh* TMeshProducer::ProduceSkyBox()
 CDXUTSDKMesh* TMeshProducer::ProducePipebomb()
 {
 	if(!m_pipebomb.IsLoaded()){
-		m_pipebomb.Create(m_device, L"Media\\pipebomb.sdkmesh", true );
+		m_pipebomb.Create(m_device, L"Media\\Dynamite\\dynamite.sdkmesh", true );
 	}
 
 	return &m_pipebomb;
