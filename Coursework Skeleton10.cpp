@@ -63,6 +63,7 @@
 #include "NigSound.h"
 #include "TTexture.h"
 #include "TMeshProducer.h"
+#include "TMeshProductionLimiter.h"
 
 
 //#define DEBUG_VS   // Uncomment this line to debug D3D9 vertex shaders 
@@ -114,6 +115,7 @@ ID3D10InputLayout*          g_pVertexLayout = NULL;
 //**************************************************************************//
 
 TMeshProducer	       *g_MeshProducer;
+TMeshProductionLimiter *g_MeshProductionLimiter;
 
 TObject3D			   *g_NewTiger;
 TObject3D			   *g_NewSkyBox;
@@ -322,6 +324,7 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
 {
 	g_p_d3dDevice = pd3dDevice;
 	g_MeshProducer = new TMeshProducer(pd3dDevice);
+	g_MeshProductionLimiter = new TMeshProductionLimiter(1);
 
     HRESULT hr;
 
@@ -560,7 +563,6 @@ void CALLBACK OnD3D10FrameRender( ID3D10Device* pd3dDevice, double fTime, float 
 
 	g_Camera.SetViewParams(&viewerPos, &lookAtPoint);
 
-
    
 	//**********************************************************************//
 	// Update the status of the sounds.										//
@@ -675,6 +677,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
     // Update the camera's position based on user input 
     g_Camera.FrameMove( fElapsedTime );
 	UpdateControllerState(fElapsedTime);
+	g_MeshProductionLimiter->Update(fElapsedTime);
 
 	for(std::vector<TBall *>::const_iterator it = balls.begin(); it != balls.end(); it++){
 		(*it)->update(fElapsedTime);
@@ -692,7 +695,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if (g_b_DownArrowDown)  g_NewTiger->position->RotateByRad(-fElapsedTime,0,0);
 	if (g_b_W)			g_NewTiger->position->MoveForward(fElapsedTime*2);
 
-	if (g_b_Space){
+	if (g_b_Space && g_MeshProductionLimiter->CanProduce()){
 			TBall *ball = new TBall(g_p_d3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene, g_MeshProducer->ProducePipebomb());
 			ball->position->MoveTo(g_NewTiger->position->m_x,g_NewTiger->position->m_y,g_NewTiger->position->m_z);
 			balls.push_back(ball);

@@ -92,6 +92,7 @@
     <ClCompile Include="TTexture.cpp" />
     <ClCompile Include="TMeshProducer.cpp" />
     <ClCompile Include="TPosition.cpp" />
+    <ClCompile Include="TMeshProductionLimiter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Coursework Skeleton10.fx">
@@ -119,6 +120,7 @@
     <ClInclude Include="TTexture.h" />
     <ClInclude Include="TMeshProducer.h" />
     <ClInclude Include="TPosition.h" />
+    <ClInclude Include="TMeshProductionLimiter.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
