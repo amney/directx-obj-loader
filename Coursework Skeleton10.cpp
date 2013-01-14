@@ -358,16 +358,17 @@ HRESULT CALLBACK OnD3D10CreateDevice( ID3D10Device* pd3dDevice, const DXGI_SURFA
 
 	texture = new TTexture(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,L"Media\\seafloor.dds");
 
-	for(int x = 0; x < 20; x += 2){
-		for(int z = 0; z < 20; z += 2){
+	for(int x = 0; x < 20; x++){
+		for(int z = 0; z < 20; z++){
 			TObject2D *tile = new TObject2D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,texture);
-			tile->position->MoveTo(x,0,z);
+			tile->position->ScaleBy(5,0,5);
+			tile->position->MoveTo(x*12,0,z*12);
 			tiles.push_back(tile);
 		}
 	}
 
 	g_NewTiger = new TObject3D(pd3dDevice,g_p_TEffect,g_p_TEffect->g_p_TechniqueRenderScene,g_MeshProducer->ProduceTiger());
-	g_NewTiger->position->MoveTo(0,0.70,0);
+	g_NewTiger->position->MoveTo(200,0.70,200);
 	g_NewTiger->position->RotateToDeg(0,0,0);
 	g_NewTiger->position->ScaleTo(1,1,1);
 
@@ -749,6 +750,10 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		if(rot.x > 0) g_Rotating = false;
 	}
 
+	//Keep the skybox relative to the tiger
+	xyz pos = g_NewTiger->position->GetPositionXYZ();
+	pos.y = 0;
+	g_NewSkyBox->position->SetPositionXYZ(pos);
 }
 
 

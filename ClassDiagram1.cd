@@ -21,15 +21,15 @@
       <FileName>TEffect.h</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="TMeshProducer" Collapsed="true">
-    <Position X="11.25" Y="0.5" Width="1.5" />
+  <Class Name="TMeshProducer">
+    <Position X="5.75" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AEAIAAAAAAhAAAAAAAAAAAQQABAAAAAAADAICAAAAAA=</HashCode>
       <FileName>TMeshProducer.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TMeshProductionLimiter" Collapsed="true">
-    <Position X="13" Y="0.5" Width="1.5" />
+    <Position X="8.75" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAQAAEAAAAAAAAAAAAAAAAACAgAAAACAAAAAAAAAAAE=</HashCode>
       <FileName>TMeshProductionLimiter.h</FileName>
@@ -80,12 +80,5 @@
       <FileName>DXUT\Optional\SDKmesh.h</FileName>
     </TypeIdentifier>
   </Class>
-  <Struct Name="CONTROLER_STATE" Collapsed="true">
-    <Position X="9.75" Y="2" Width="4" />
-    <TypeIdentifier>
-      <HashCode>AAAAAABAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
-      <FileName>Coursework Skeleton10.cpp</FileName>
-    </TypeIdentifier>
-  </Struct>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>
